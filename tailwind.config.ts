@@ -13,6 +13,10 @@ export default {
       },
     },
     extend: {
+      fontFamily: {
+        'poppins': ['Poppins', 'sans-serif'],
+        'montserrat': ['Montserrat', 'sans-serif'],
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
@@ -57,6 +61,11 @@ export default {
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
         },
+        // Game Colors
+        "game-red": "hsl(var(--game-red))",
+        "game-blue": "hsl(var(--game-blue))",
+        "game-white": "hsl(var(--game-white))",
+        "game-gold": "hsl(var(--game-gold))",
       },
       borderRadius: {
         lg: "var(--radius)",
