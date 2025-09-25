@@ -2,6 +2,7 @@ import React, { useState, useRef } from 'react';
 import { useGame } from './GameContext';
 import { Button } from '@/components/ui/button';
 import { Play, Trophy } from 'lucide-react';
+import { SeatConfig } from './SeatConfig';
 
 export const SpinningWheel: React.FC = () => {
   const { state, dispatch } = useGame();
@@ -23,8 +24,8 @@ export const SpinningWheel: React.FC = () => {
 
     // Calculate rotation (multiple full rotations + final position)
     const baseRotation = 1800; // 5 full rotations
-    const segmentAngle = 360 / 60; // Each number takes 6 degrees
-    const targetAngle = (60 - selectedSeat) * segmentAngle + (segmentAngle / 2);
+    const segmentAngle = 360 / state.maxSeats; // Each number takes equal degrees
+    const targetAngle = (state.maxSeats - selectedSeat) * segmentAngle + (segmentAngle / 2);
     const finalRotation = baseRotation + targetAngle;
 
     if (wheelRef.current) {
@@ -50,8 +51,8 @@ export const SpinningWheel: React.FC = () => {
 
   const renderWheelSegments = () => {
     const segments = [];
-    for (let i = 1; i <= 60; i++) {
-      const angle = (i - 1) * 6; // 360/60 = 6 degrees per segment
+    for (let i = 1; i <= state.maxSeats; i++) {
+      const angle = (i - 1) * (360 / state.maxSeats); // Equal degrees per segment
       const isBlue = i % 2 === 0;
       const isAvailable = state.availableSeats.includes(i);
       
@@ -75,6 +76,7 @@ export const SpinningWheel: React.FC = () => {
 
   return (
     <div className="flex flex-col items-center space-y-8 py-8">
+      <SeatConfig />
       {/* Wheel Container */}
       <div className="relative">
         {/* Pointer Arrow */}

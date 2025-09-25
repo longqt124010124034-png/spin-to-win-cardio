@@ -7,7 +7,7 @@ import { ArrowLeft, Clock, CheckCircle, XCircle, Gift } from 'lucide-react';
 export const QuestionBoard: React.FC = () => {
   const { state, dispatch } = useGame();
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
-  const [timeLeft, setTimeLeft] = useState(15);
+  const [timeLeft, setTimeLeft] = useState(state.timeLimit);
   const [showCorrectAnswer, setShowCorrectAnswer] = useState(false);
 
   useEffect(() => {
@@ -31,11 +31,11 @@ export const QuestionBoard: React.FC = () => {
   useEffect(() => {
     // Reset timer when new question starts
     if (state.currentQuestion && state.playerAttempts === 0) {
-      setTimeLeft(15);
+      setTimeLeft(state.timeLimit);
       setSelectedAnswer(null);
       setShowCorrectAnswer(false);
     }
-  }, [state.currentQuestion, state.playerAttempts]);
+  }, [state.currentQuestion, state.playerAttempts, state.timeLimit]);
 
   // Early return after all hooks have been called
   if (state.currentScreen !== 'questions') return null;
@@ -67,6 +67,10 @@ export const QuestionBoard: React.FC = () => {
     }, 1000);
   };
 
+  const resetQuestion = () => {
+    dispatch({ type: 'RESET_QUESTION' });
+  };
+
   const returnToWheel = () => {
     // Mark question as completed if answered correctly
     if (state.lastAnswer === 'correct' && state.currentQuestion) {
@@ -76,6 +80,12 @@ export const QuestionBoard: React.FC = () => {
     setTimeout(() => {
       dispatch({ type: 'RETURN_TO_WHEEL' });
     }, 2000);
+  };
+
+  const canResetQuestion = () => {
+    if (!state.currentQuestion) return false;
+    const attempts = state.questionAttempts[state.currentQuestion.id] || 0;
+    return attempts < 2 && state.lastAnswer === 'incorrect' && state.playerAttempts >= 2;
   };
 
   const renderQuestionNumbers = () => {
@@ -175,8 +185,8 @@ export const QuestionBoard: React.FC = () => {
 
           {/* Progress Bar */}
           <Progress 
-            value={(15 - timeLeft) / 15 * 100} 
-            className={`mb-6 h-2 ${timeLeft <= 5 ? 'animate-pulse' : ''}`}
+            value={(state.timeLimit - timeLeft) / state.timeLimit * 100} 
+            className={`mb-6 h-3 ${timeLeft <= 5 ? 'animate-pulse ring-2 ring-red-400' : ''}`}
           />
 
           {/* Question */}
@@ -218,15 +228,24 @@ export const QuestionBoard: React.FC = () => {
                 </div>
               ) : (
                 <div className="text-red-400 mb-4">
-                  <XCircle className="w-16 h-16 mx-auto mb-2" />
+                  <XCircle className="w-16 h-16 mx-auto mb-2 shake" />
                   <h4 className="text-2xl font-bold mb-2">
                     {state.playerAttempts >= 2 ? 'Hết lượt thử!' : 'Chưa đúng!'}
                   </h4>
-                  <p className="text-lg">
+                  <p className="text-lg mb-4">
                     {state.playerAttempts >= 2 
                       ? 'Đáp án đúng đã được highlight.' 
                       : 'Bạn còn 1 lần thử nữa!'}
                   </p>
+                  
+                  {canResetQuestion() && (
+                    <Button
+                      onClick={resetQuestion}
+                      className="mb-4 bg-orange-500 hover:bg-orange-600 text-white font-bold px-6 py-2 rounded-xl mr-4"
+                    >
+                      🔄 Thử lại (10s)
+                    </Button>
+                  )}
                 </div>
               )}
               
