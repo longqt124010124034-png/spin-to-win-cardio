@@ -10,8 +10,6 @@ export const QuestionBoard: React.FC = () => {
   const [timeLeft, setTimeLeft] = useState(15);
   const [showCorrectAnswer, setShowCorrectAnswer] = useState(false);
 
-  if (state.currentScreen !== 'questions') return null;
-
   useEffect(() => {
     if (state.currentQuestion && !state.showResult) {
       const timer = setInterval(() => {
@@ -38,6 +36,9 @@ export const QuestionBoard: React.FC = () => {
       setShowCorrectAnswer(false);
     }
   }, [state.currentQuestion, state.playerAttempts]);
+
+  // Early return after all hooks have been called
+  if (state.currentScreen !== 'questions') return null;
 
   const selectRandomQuestion = () => {
     const availableQuestions = state.questions.filter(
