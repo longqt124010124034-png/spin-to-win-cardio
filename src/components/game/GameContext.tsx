@@ -112,6 +112,12 @@ const initialState: GameState = {
 };
 
 const gameReducer = (state: GameState, action: GameAction): GameState => {
+  // Safety check to ensure state is properly initialized
+  if (!state || !state.selectedQuestions) {
+    console.error('State is corrupted, reinitializing...', state);
+    return initialState;
+  }
+
   switch (action.type) {
     case 'SELECT_SEAT':
       return {
@@ -161,14 +167,15 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
     case 'COMPLETE_QUESTION':
       return {
         ...state,
-        selectedQuestions: [...state.selectedQuestions, action.payload]
+        selectedQuestions: [...(state.selectedQuestions || []), action.payload]
       };
     
     case 'SET_MAX_SEATS':
       return {
         ...state,
         maxSeats: action.payload,
-        availableSeats: Array.from({ length: action.payload }, (_, i) => i + 1)
+        availableSeats: Array.from({ length: action.payload }, (_, i) => i + 1),
+        selectedQuestions: state.selectedQuestions || [] // Ensure array exists
       };
     
     case 'RETURN_TO_WHEEL':
