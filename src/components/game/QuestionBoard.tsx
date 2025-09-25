@@ -68,6 +68,11 @@ export const QuestionBoard: React.FC = () => {
   };
 
   const returnToWheel = () => {
+    // Mark question as completed if answered correctly
+    if (state.lastAnswer === 'correct' && state.currentQuestion) {
+      dispatch({ type: 'COMPLETE_QUESTION', payload: state.currentQuestion.id });
+    }
+    
     setTimeout(() => {
       dispatch({ type: 'RETURN_TO_WHEEL' });
     }, 2000);

@@ -23,6 +23,7 @@ type GameAction =
   | { type: 'SELECT_SEAT'; payload: number }
   | { type: 'START_QUESTION'; payload: Question }
   | { type: 'ANSWER_QUESTION'; payload: { correct: boolean } }
+  | { type: 'COMPLETE_QUESTION'; payload: number }
   | { type: 'RETURN_TO_WHEEL' }
   | { type: 'SHOW_RESULT'; payload: boolean }
   | { type: 'RESET_ATTEMPTS' };
@@ -128,6 +129,12 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
         playerAttempts: newAttempts,
         lastAnswer: action.payload.correct ? 'correct' : 'incorrect',
         showResult: action.payload.correct || newAttempts >= 2
+      };
+    
+    case 'COMPLETE_QUESTION':
+      return {
+        ...state,
+        selectedQuestions: [...state.selectedQuestions, action.payload]
       };
     
     case 'RETURN_TO_WHEEL':

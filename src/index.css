@@ -138,6 +138,16 @@ All colors MUST be HSL.
   /* Game Components */
   .wheel-spin {
     animation: spin-wheel 3s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+    transform: rotate(var(--final-rotation, 0deg));
+  }
+  
+  @keyframes spin-wheel {
+    0% {
+      transform: rotate(0deg);
+    }
+    100% {
+      transform: rotate(var(--final-rotation, 1800deg));
+    }
   }
   
   .wheel-glow {
@@ -181,11 +191,6 @@ All colors MUST be HSL.
   .fireworks {
     animation: fireworks 1s ease-out forwards;
   }
-}
-
-@keyframes spin-wheel {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(var(--final-rotation, 1800deg)); }
 }
 
 @keyframes sparkle {
