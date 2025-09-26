@@ -29,13 +29,23 @@ export const QuestionBoard: React.FC = () => {
   }, [state.currentQuestion, state.showResult, dispatch]);
 
   useEffect(() => {
-    // Reset timer when new question starts
-    if (state.currentQuestion && state.playerAttempts === 0) {
-      setTimeLeft(state.timeLimit);
-      setSelectedAnswer(null);
-      setShowCorrectAnswer(false);
+    // Reset timer when new question starts or when question is reset
+    if (state.currentQuestion) {
+      if (state.playerAttempts === 0) {
+        // New question or reset - use the current time limit
+        setTimeLeft(state.timeLimit);
+        setSelectedAnswer(null);
+        setShowCorrectAnswer(false);
+      }
     }
   }, [state.currentQuestion, state.playerAttempts, state.timeLimit]);
+
+  // Separate effect to handle timeLimit changes (for reset functionality)
+  useEffect(() => {
+    if (state.currentQuestion && state.playerAttempts === 0) {
+      setTimeLeft(state.timeLimit);
+    }
+  }, [state.timeLimit]);
 
   // Early return after all hooks have been called
   if (state.currentScreen !== 'questions') return null;
