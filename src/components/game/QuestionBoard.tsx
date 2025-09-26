@@ -60,8 +60,8 @@ export const QuestionBoard: React.FC = () => {
     setTimeout(() => {
       dispatch({ type: 'ANSWER_QUESTION', payload: { correct: isCorrect } });
       
+      // Show correct answer immediately after second wrong attempt
       if (!isCorrect && state.playerAttempts >= 1) {
-        // Show correct answer after 2 wrong attempts
         setShowCorrectAnswer(true);
       }
     }, 1000);
@@ -85,7 +85,8 @@ export const QuestionBoard: React.FC = () => {
   const canResetQuestion = () => {
     if (!state.currentQuestion) return false;
     const attempts = state.questionAttempts[state.currentQuestion.id] || 0;
-    return attempts < 2 && state.lastAnswer === 'incorrect' && state.playerAttempts >= 2;
+    // Only allow reset after first wrong attempt, not after second
+    return attempts < 2 && state.lastAnswer === 'incorrect' && state.playerAttempts === 2;
   };
 
   const renderQuestionNumbers = () => {
@@ -233,9 +234,11 @@ export const QuestionBoard: React.FC = () => {
                     {state.playerAttempts >= 2 ? 'Hết lượt thử!' : 'Chưa đúng!'}
                   </h4>
                   <p className="text-lg mb-4">
-                    {state.playerAttempts >= 2 
+                    {state.playerAttempts >= 2 && !canResetQuestion()
                       ? 'Đáp án đúng đã được highlight.' 
-                      : 'Bạn còn 1 lần thử nữa!'}
+                      : state.playerAttempts >= 2 
+                        ? 'Bạn còn 1 lần thử nữa!' 
+                        : 'Bạn còn 1 lần thử nữa!'}
                   </p>
                   
                   {canResetQuestion() && (
