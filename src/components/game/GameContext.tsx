@@ -1,10 +1,11 @@
 import React, { createContext, useContext, useReducer, ReactNode } from 'react';
 
 export interface Question {
-  id: number;
+  id: number;  
   question: string;
   options: string[];
   correct: number;
+  explanation: string;
 }
 
 interface GameState {
@@ -39,61 +40,71 @@ const gameQuestions: Question[] = [
     id: 1,
     question: 'Tên gọi chính thức của cuộc thi chạy có quãng đường 42,195 km là gì?',
     options: ['Half Marathon', 'Marathon', 'Ultra Marathon', 'Sprint Marathon'],
-    correct: 1
+    correct: 1,
+    explanation: 'Marathon là tên gọi chính thức của cuộc thi chạy 42,195 km, có nguồn gốc từ trận Marathon ở Hy Lạp cổ đại.'
   },
   {
     id: 2,
     question: 'Khởi động trước khi chạy có tác dụng chính là gì?',
     options: ['Tăng sức bền', 'Giúp giảm cân', 'Giảm nguy cơ chấn thương', 'Tăng tốc độ'],
-    correct: 2
+    correct: 2,
+    explanation: 'Khởi động giúp làm ấm cơ bắp, tăng lưu lượng máu và chuẩn bị cơ thể cho hoạt động, từ đó giảm nguy cơ chấn thương.'
   },
   {
     id: 3,
     question: 'Loại chấn thương phổ biến nhất mà người chạy bộ hay gặp phải là gì?',
     options: ['Chấn thương cổ tay', 'Đau đầu gối (Runner\'s Knee)', 'Đau lưng', 'Chấn thương vai'],
-    correct: 1
+    correct: 1,
+    explanation: 'Đau đầu gối (Runner\'s Knee) là chấn thương phổ biến nhất do tác động lặp lại và áp lực lên khớp gối khi chạy.'
   },
   {
     id: 4,
     question: 'Thời gian tốt nhất để nạp năng lượng sau khi chạy là trong khoảng thời gian nào?',
     options: ['Ngay lập tức', 'Sau 2 giờ', '30 phút đầu tiên', 'Sau 4 giờ'],
-    correct: 2
+    correct: 2,
+    explanation: 'Trong 30 phút đầu sau khi tập luyện là "cửa sổ vàng" để cơ thể hấp thụ dinh dưỡng và phục hồi hiệu quả nhất.'
   },
   {
     id: 5,
     question: 'Biểu hiện của "chuột rút" là gì?',
     options: ['Cảm giác châm chích ở chân', 'Buồn nôn', 'Co thắt cơ đột ngột', 'Hoa mắt'],
-    correct: 2
+    correct: 2,
+    explanation: 'Chuột rút là hiện tượng co thắt cơ đột ngột và không kiểm soát được, thường do mệt mỏi hoặc mất nước điện giải.'
   },
   {
     id: 6,
     question: 'Đôi giày chuyên dụng cho chạy bộ có đặc điểm gì nổi bật?',
     options: ['Cứng và nhẹ', 'Có độ đàn hồi và đệm tốt', 'Lớp đế mỏng', 'Bề mặt nhẵn'],
-    correct: 1
+    correct: 1,
+    explanation: 'Giày chạy bộ cần có độ đàn hồi và đệm tốt để hấp thụ lực tác động, bảo vệ khớp và giảm chấn thương.'
   },
   {
     id: 7,
     question: 'Mục đích của việc hít thở bằng bụng khi chạy là gì?',
     options: ['Giảm đau', 'Tăng hiệu quả hô hấp', 'Giúp cơ bắp săn chắc', 'Giảm mệt mỏi'],
-    correct: 1
+    correct: 1,
+    explanation: 'Hít thở bằng bụng (cơ hoành) giúp tăng dung tích phổi, cung cấp oxy hiệu quả hơn so với thở ngực.'
   },
   {
     id: 8,
     question: 'Tại sao không nên chạy quá sức khi mới bắt đầu?',
     options: ['Gây lãng phí năng lượng', 'Dễ dẫn đến chấn thương và nản chí', 'Giảm tốc độ', 'Giảm khả năng đốt mỡ'],
-    correct: 1
+    correct: 1,
+    explanation: 'Chạy quá sức khi mới bắt đầu có thể gây chấn thương do cơ thể chưa thích nghi, và tạo cảm giác nản chí, bỏ cuộc.'
   },
   {
     id: 9,
     question: 'Tên tiếng Anh của môn chạy bộ là gì?',
     options: ['Walking', 'Swimming', 'Running', 'Cycling'],
-    correct: 2
+    correct: 2,
+    explanation: 'Running là thuật ngữ tiếng Anh chính xác cho môn chạy bộ, khác với Walking (đi bộ).'
   },
   {
     id: 10,
     question: 'Tác dụng của việc bổ sung nước điện giải khi chạy là gì?',
     options: ['Hỗ trợ tiêu hóa', 'Bù nước và khoáng chất bị mất', 'Tăng tốc độ', 'Giảm cân nhanh hơn'],
-    correct: 1
+    correct: 1,
+    explanation: 'Nước điện giải giúp bù đắp nước và các khoáng chất (natri, kali) bị mất qua mồ hôi khi chạy.'
   }
 ];
 

@@ -261,6 +261,18 @@ export const QuestionBoard: React.FC = () => {
                   )}
                 </div>
               )}
+
+              {/* Explanation Section */}
+              {(showCorrectAnswer || state.lastAnswer === 'correct') && state.currentQuestion && (
+                <div className="glassmorphism rounded-xl p-6 mb-6 bg-blue-500/10 border border-blue-500/20 fade-in">
+                  <h5 className="text-lg font-bold text-blue-300 mb-3 flex items-center justify-center">
+                    💡 Giải thích
+                  </h5>
+                  <p className="text-muted-foreground leading-relaxed">
+                    {state.currentQuestion.explanation}
+                  </p>
+                </div>
+              )}
               
               <Button
                 onClick={returnToWheel}
