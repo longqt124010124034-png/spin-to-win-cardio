@@ -207,8 +207,28 @@ All colors MUST be HSL.
     animation: shake 0.5s ease-in-out;
   }
   
-  .fireworks {
-    animation: fireworks 1s ease-out forwards;
+  .floating {
+    animation: float 3s ease-in-out infinite;
+  }
+  
+  .glow {
+    box-shadow: 0 0 20px hsl(var(--game-gold) / 0.4);
+  }
+  
+  /* Enhanced pointer pulse during spin */
+  .wheel-container.spinning .wheel-pointer {
+    animation: pointer-pulse 0.5s ease-in-out infinite alternate;
+  }
+  
+  @keyframes pointer-pulse {
+    0% {
+      transform: translateX(-50%) translateY(-4px) scale(1);
+      filter: drop-shadow(0 0 10px hsl(var(--game-gold) / 0.8));
+    }
+    100% {
+      transform: translateX(-50%) translateY(-4px) scale(1.1);
+      filter: drop-shadow(0 0 20px hsl(var(--game-gold) / 1));
+    }
   }
 }
 

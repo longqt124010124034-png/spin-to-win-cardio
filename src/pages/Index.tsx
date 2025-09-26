@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { SpinningWheel } from '@/components/game/SpinningWheel';
 import { QuestionBoard } from '@/components/game/QuestionBoard';
+import { GameSetup } from '@/components/game/GameSetup';
 import { GameProvider } from '@/components/game/GameContext';
 import { ParticleBackground } from '@/components/game/ParticleBackground';
 import gameBackground from '@/assets/game-background.jpg';
@@ -32,6 +33,7 @@ const Index = () => {
         {/* Main Game Area */}
         <main className="relative z-10 container mx-auto px-4">
           <div className="flex flex-col items-center justify-center">
+            <GameSetup />
             <SpinningWheel />
             <QuestionBoard />
           </div>

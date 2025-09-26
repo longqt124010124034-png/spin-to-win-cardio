@@ -8,7 +8,7 @@ export interface Question {
 }
 
 interface GameState {
-  currentScreen: 'wheel' | 'questions';
+  currentScreen: 'setup' | 'wheel' | 'questions';
   selectedSeat: number | null;
   availableSeats: number[];
   questions: Question[];
@@ -31,7 +31,8 @@ type GameAction =
   | { type: 'RETURN_TO_WHEEL' }
   | { type: 'SHOW_RESULT'; payload: boolean }
   | { type: 'RESET_ATTEMPTS' }
-  | { type: 'SET_MAX_SEATS'; payload: number };
+  | { type: 'SET_MAX_SEATS'; payload: number }
+  | { type: 'START_GAME' };
 
 const gameQuestions: Question[] = [
   {
@@ -97,7 +98,7 @@ const gameQuestions: Question[] = [
 ];
 
 const initialState: GameState = {
-  currentScreen: 'wheel',
+  currentScreen: 'setup',
   selectedSeat: null,
   availableSeats: Array.from({ length: 60 }, (_, i) => i + 1),
   questions: gameQuestions,
@@ -176,6 +177,12 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
         maxSeats: action.payload,
         availableSeats: Array.from({ length: action.payload }, (_, i) => i + 1),
         selectedQuestions: state.selectedQuestions || [] // Ensure array exists
+      };
+    
+    case 'START_GAME':
+      return {
+        ...state,
+        currentScreen: 'wheel'
       };
     
     case 'RETURN_TO_WHEEL':
