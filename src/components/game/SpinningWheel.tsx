@@ -12,8 +12,6 @@ export const SpinningWheel: React.FC = () => {
   const spinAudioRef = useRef<HTMLAudioElement>(null);
   const winAudioRef = useRef<HTMLAudioElement>(null);
 
-  if (state.currentScreen !== 'wheel') return null;
-
   // Create audio elements
   useEffect(() => {
     // Create spin sound (using a simple oscillator for demo)
@@ -50,6 +48,8 @@ export const SpinningWheel: React.FC = () => {
       }
     };
   }, [isSpinning]);
+
+  if (state.currentScreen !== 'wheel') return null;
 
   const spinWheel = () => {
     if (isSpinning || state.availableSeats.length === 0) return;
