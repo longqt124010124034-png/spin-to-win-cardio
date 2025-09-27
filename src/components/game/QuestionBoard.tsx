@@ -156,6 +156,19 @@ export const QuestionBoard: React.FC = () => {
     }
   }, [state.timeLimit]);
 
+  // Start background music when questions start
+  useEffect(() => {
+    if (state.currentQuestion && backgroundMusicRef.current) {
+      (backgroundMusicRef.current as any).play();
+    }
+    
+    return () => {
+      if (backgroundMusicRef.current) {
+        (backgroundMusicRef.current as any).pause();
+      }
+    };
+  }, [state.currentQuestion]);
+
   // Early return after all hooks have been called
   if (state.currentScreen !== 'questions') return null;
 
@@ -264,19 +277,6 @@ export const QuestionBoard: React.FC = () => {
     
     return `${baseClass} bg-card border-border opacity-50`;
   };
-
-  // Start background music when questions start
-  useEffect(() => {
-    if (state.currentQuestion && backgroundMusicRef.current) {
-      (backgroundMusicRef.current as any).play();
-    }
-    
-    return () => {
-      if (backgroundMusicRef.current) {
-        (backgroundMusicRef.current as any).pause();
-      }
-    };
-  }, [state.currentQuestion]);
 
   return (
     <div className={`w-full max-w-4xl mx-auto p-6 relative ${
