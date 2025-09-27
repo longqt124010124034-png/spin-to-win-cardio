@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useGame } from './GameContext';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
@@ -9,6 +9,115 @@ export const QuestionBoard: React.FC = () => {
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
   const [timeLeft, setTimeLeft] = useState(state.timeLimit);
   const [showCorrectAnswer, setShowCorrectAnswer] = useState(false);
+  const [showEffect, setShowEffect] = useState<'correct' | 'incorrect' | null>(null);
+  
+  const correctAudioRef = useRef<HTMLAudioElement>(null);
+  const incorrectAudioRef = useRef<HTMLAudioElement>(null);
+  const backgroundMusicRef = useRef<HTMLAudioElement>(null);
+
+  // Create audio elements
+  useEffect(() => {
+    // Create correct answer sound (celebration melody)
+    const correctAudio = new Audio();
+    const correctAudioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+    
+    const createCorrectSound = () => {
+      const oscillator = correctAudioContext.createOscillator();
+      const gainNode = correctAudioContext.createGain();
+      
+      oscillator.connect(gainNode);
+      gainNode.connect(correctAudioContext.destination);
+      
+      oscillator.frequency.setValueAtTime(523.25, correctAudioContext.currentTime); // C5
+      oscillator.frequency.setValueAtTime(659.25, correctAudioContext.currentTime + 0.1); // E5
+      oscillator.frequency.setValueAtTime(783.99, correctAudioContext.currentTime + 0.2); // G5
+      oscillator.frequency.setValueAtTime(1046.50, correctAudioContext.currentTime + 0.3); // C6
+      
+      gainNode.gain.setValueAtTime(0.3, correctAudioContext.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, correctAudioContext.currentTime + 0.5);
+      
+      oscillator.start(correctAudioContext.currentTime);
+      oscillator.stop(correctAudioContext.currentTime + 0.5);
+    };
+    
+    // Create incorrect answer sound (descending notes)
+    const createIncorrectSound = () => {
+      const incorrectAudioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const oscillator = incorrectAudioContext.createOscillator();
+      const gainNode = incorrectAudioContext.createGain();
+      
+      oscillator.connect(gainNode);
+      gainNode.connect(incorrectAudioContext.destination);
+      
+      oscillator.frequency.setValueAtTime(400, incorrectAudioContext.currentTime); // G4
+      oscillator.frequency.setValueAtTime(350, incorrectAudioContext.currentTime + 0.1); // F4
+      oscillator.frequency.setValueAtTime(300, incorrectAudioContext.currentTime + 0.2); // D4
+      
+      gainNode.gain.setValueAtTime(0.2, incorrectAudioContext.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, incorrectAudioContext.currentTime + 0.3);
+      
+      oscillator.start(incorrectAudioContext.currentTime);
+      oscillator.stop(incorrectAudioContext.currentTime + 0.3);
+    };
+    
+    correctAudioRef.current = { play: createCorrectSound } as any;
+    incorrectAudioRef.current = { play: createIncorrectSound } as any;
+    
+    // Background music loop
+    const createBackgroundMusic = () => {
+      const bgAudioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+      let isPlaying = false;
+      
+      const playNote = (frequency: number, duration: number, startTime: number) => {
+        const oscillator = bgAudioContext.createOscillator();
+        const gainNode = bgAudioContext.createGain();
+        
+        oscillator.connect(gainNode);
+        gainNode.connect(bgAudioContext.destination);
+        
+        oscillator.frequency.setValueAtTime(frequency, startTime);
+        oscillator.type = 'sine';
+        
+        gainNode.gain.setValueAtTime(0, startTime);
+        gainNode.gain.linearRampToValueAtTime(0.05, startTime + 0.1);
+        gainNode.gain.linearRampToValueAtTime(0, startTime + duration);
+        
+        oscillator.start(startTime);
+        oscillator.stop(startTime + duration);
+      };
+      
+      const playMelody = () => {
+        if (!isPlaying) return;
+        
+        const notes = [523.25, 587.33, 659.25, 698.46, 783.99, 880.00]; // C5, D5, E5, F5, G5, A5
+        const startTime = bgAudioContext.currentTime;
+        
+        notes.forEach((note, index) => {
+          playNote(note, 0.8, startTime + index * 0.5);
+        });
+        
+        setTimeout(() => playMelody(), 3000);
+      };
+      
+      return {
+        play: () => {
+          isPlaying = true;
+          playMelody();
+        },
+        pause: () => {
+          isPlaying = false;
+        }
+      };
+    };
+    
+    backgroundMusicRef.current = createBackgroundMusic() as any;
+    
+    return () => {
+      if (backgroundMusicRef.current) {
+        (backgroundMusicRef.current as any).pause();
+      }
+    };
+  }, []);
 
   useEffect(() => {
     if (state.currentQuestion && !state.showResult) {
@@ -67,6 +176,15 @@ export const QuestionBoard: React.FC = () => {
     setSelectedAnswer(answerIndex);
     const isCorrect = answerIndex === state.currentQuestion?.correct;
     
+    // Play sound and show effect immediately
+    if (isCorrect) {
+      correctAudioRef.current?.play();
+      setShowEffect('correct');
+    } else {
+      incorrectAudioRef.current?.play();
+      setShowEffect('incorrect');
+    }
+    
     setTimeout(() => {
       dispatch({ type: 'ANSWER_QUESTION', payload: { correct: isCorrect } });
       
@@ -74,6 +192,8 @@ export const QuestionBoard: React.FC = () => {
       if (!isCorrect && state.playerAttempts >= 1) {
         setShowCorrectAnswer(true);
       }
+      
+      setShowEffect(null);
     }, 1000);
   };
 
@@ -126,27 +246,43 @@ export const QuestionBoard: React.FC = () => {
     const baseClass = "w-full p-4 text-left rounded-xl border-2 transition-all duration-300 font-medium";
     
     if (!state.showResult && selectedAnswer === null) {
-      return `${baseClass} bg-card border-border hover:border-primary hover:bg-primary/10 cursor-pointer`;
+      return `${baseClass} bg-card border-border hover:border-primary hover:bg-primary/10 cursor-pointer hover:scale-105 hover:shadow-lg`;
     }
     
     if (selectedAnswer === index) {
       const isCorrect = index === state.currentQuestion?.correct;
       return `${baseClass} ${
         isCorrect 
-          ? 'bg-green-500/20 border-green-500 text-green-400' 
-          : 'bg-red-500/20 border-red-500 text-red-400 shake'
+          ? 'bg-green-500/30 border-green-400 text-green-300 glow shadow-green-500/50 scale-105' 
+          : 'bg-red-500/30 border-red-400 text-red-300 shake shadow-red-500/50'
       }`;
     }
     
     if (showCorrectAnswer && index === state.currentQuestion?.correct) {
-      return `${baseClass} bg-green-500/20 border-green-500 text-green-400 pulse-glow`;
+      return `${baseClass} bg-green-500/30 border-green-400 text-green-300 pulse-glow shadow-green-500/50 glow`;
     }
     
     return `${baseClass} bg-card border-border opacity-50`;
   };
 
+  // Start background music when questions start
+  useEffect(() => {
+    if (state.currentQuestion && backgroundMusicRef.current) {
+      (backgroundMusicRef.current as any).play();
+    }
+    
+    return () => {
+      if (backgroundMusicRef.current) {
+        (backgroundMusicRef.current as any).pause();
+      }
+    };
+  }, [state.currentQuestion]);
+
   return (
-    <div className="w-full max-w-4xl mx-auto p-6">
+    <div className={`w-full max-w-4xl mx-auto p-6 relative ${
+      showEffect === 'correct' ? 'animate-pulse bg-green-500/10' : 
+      showEffect === 'incorrect' ? 'animate-bounce bg-red-500/10' : ''
+    }`}>
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <Button
@@ -228,37 +364,45 @@ export const QuestionBoard: React.FC = () => {
           {state.showResult && (
             <div className="text-center bounce-in">
               {state.lastAnswer === 'correct' ? (
-                <div className="text-green-400 mb-4">
-                  <CheckCircle className="w-16 h-16 mx-auto mb-2 fireworks" />
-                  <h4 className="text-2xl font-bold mb-2">Chính xác! 🎉</h4>
-                  <p className="text-lg mb-4">Chúc mừng! Bạn đã trả lời đúng!</p>
-                  <div className="flex items-center justify-center space-x-2 text-game-gold">
-                    <Gift className="w-6 h-6" />
-                    <span className="font-bold text-xl">Nhận quà ngay!</span>
+                <div className="text-green-400 mb-4 relative">
+                  <div className="absolute inset-0 bg-green-500/20 rounded-2xl animate-pulse"></div>
+                  <div className="relative z-10">
+                    <CheckCircle className="w-20 h-20 mx-auto mb-2 text-green-300 animate-bounce drop-shadow-lg" />
+                    <div className="text-4xl mb-2">🎊🎉✨</div>
+                    <h4 className="text-3xl font-bold mb-2 gradient-text animate-pulse">Chính xác!</h4>
+                    <p className="text-xl mb-4 text-green-300">Chúc mừng! Bạn đã trả lời đúng!</p>
+                    <div className="flex items-center justify-center space-x-2 text-game-gold animate-bounce">
+                      <Gift className="w-8 h-8 animate-spin" />
+                      <span className="font-bold text-2xl glow">Nhận quà ngay!</span>
+                    </div>
                   </div>
                 </div>
               ) : (
-                <div className="text-red-400 mb-4">
-                  <XCircle className="w-16 h-16 mx-auto mb-2 shake" />
-                  <h4 className="text-2xl font-bold mb-2">
-                    {state.playerAttempts >= 2 ? 'Hết lượt thử!' : 'Chưa đúng!'}
-                  </h4>
-                  <p className="text-lg mb-4">
-                    {state.playerAttempts >= 2 && !canResetQuestion()
-                      ? 'Đáp án đúng đã được highlight.' 
-                      : state.playerAttempts >= 2 
-                        ? 'Bạn còn 1 lần thử nữa!' 
-                        : 'Bạn còn 1 lần thử nữa!'}
-                  </p>
-                  
-                  {canResetQuestion() && (
-                    <Button
-                      onClick={resetQuestion}
-                      className="mb-4 bg-orange-500 hover:bg-orange-600 text-white font-bold px-6 py-2 rounded-xl mr-4"
-                    >
-                      🔄 Thử lại (10s)
-                    </Button>
-                  )}
+                <div className="text-red-400 mb-4 relative">
+                  <div className="absolute inset-0 bg-red-500/20 rounded-2xl animate-pulse"></div>
+                  <div className="relative z-10">
+                    <XCircle className="w-20 h-20 mx-auto mb-2 text-red-300 shake animate-pulse" />
+                    <div className="text-4xl mb-2">😞💔❌</div>
+                    <h4 className="text-3xl font-bold mb-2 text-red-300">
+                      {state.playerAttempts >= 2 ? 'Hết lượt thử!' : 'Chưa đúng!'}
+                    </h4>
+                    <p className="text-lg mb-4">
+                      {state.playerAttempts >= 2 && !canResetQuestion()
+                        ? 'Đáp án đúng đã được highlight.' 
+                        : state.playerAttempts >= 2 
+                          ? 'Bạn còn 1 lần thử nữa!' 
+                          : 'Bạn còn 1 lần thử nữa!'}
+                    </p>
+                    
+                    {canResetQuestion() && (
+                      <Button
+                        onClick={resetQuestion}
+                        className="mb-4 bg-orange-500 hover:bg-orange-600 text-white font-bold px-6 py-2 rounded-xl mr-4"
+                      >
+                        🔄 Thử lại (10s)
+                      </Button>
+                    )}
+                  </div>
                 </div>
               )}
 
